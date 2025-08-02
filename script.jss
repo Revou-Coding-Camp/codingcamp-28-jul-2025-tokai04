@@ -94,8 +94,14 @@ contactForm.addEventListener('submit', (e) => {
     const formData = new FormData(contactForm);
     const name = formData.get('name');
     const email = formData.get('email');
-    const subject = formData.get('subject');
+    const gender = formData.get('gender');
     const message = formData.get('message');
+    
+    // Validate form
+    if (!validateForm()) {
+        showNotification('Mohon lengkapi semua field yang diperlukan!', 'error');
+        return;
+    }
     
     // Simulate form submission
     showNotification('Pesan berhasil dikirim! Terima kasih telah menghubungi saya.', 'success');
@@ -104,7 +110,7 @@ contactForm.addEventListener('submit', (e) => {
     contactForm.reset();
     
     // In real application, you would send this data to a server
-    console.log('Form submitted:', { name, email, subject, message });
+    console.log('Form submitted:', { name, email, gender, message });
 });
 
 // Notification system
@@ -172,9 +178,11 @@ function closeNotification(notification) {
 
 // Form validation
 function validateForm() {
-    const inputs = contactForm.querySelectorAll('input, textarea');
+    const inputs = contactForm.querySelectorAll('input[type="text"], input[type="email"], textarea');
+    const genderInputs = contactForm.querySelectorAll('input[name="gender"]');
     let isValid = true;
     
+    // Validate text inputs and textarea
     inputs.forEach(input => {
         if (input.hasAttribute('required') && !input.value.trim()) {
             input.style.borderColor = '#ff6b6b';
@@ -193,11 +201,24 @@ function validateForm() {
         }
     });
     
+    // Validate gender selection
+    const genderSelected = Array.from(genderInputs).some(input => input.checked);
+    if (!genderSelected) {
+        genderInputs.forEach(input => {
+            input.style.borderColor = '#ff6b6b';
+        });
+        isValid = false;
+    } else {
+        genderInputs.forEach(input => {
+            input.style.borderColor = '#00ff88';
+        });
+    }
+    
     return isValid;
 }
 
 // Add input event listeners for real-time validation
-contactForm.querySelectorAll('input, textarea').forEach(input => {
+contactForm.querySelectorAll('input[type="text"], input[type="email"], textarea').forEach(input => {
     input.addEventListener('input', () => {
         if (input.hasAttribute('required') && input.value.trim()) {
             input.style.borderColor = '#00ff88';
@@ -210,6 +231,16 @@ contactForm.querySelectorAll('input, textarea').forEach(input => {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             input.style.borderColor = emailRegex.test(input.value.trim()) ? '#00ff88' : '#ff6b6b';
         }
+    });
+});
+
+// Add change event listeners for radio buttons
+contactForm.querySelectorAll('input[name="gender"]').forEach(input => {
+    input.addEventListener('change', () => {
+        const allGenderInputs = contactForm.querySelectorAll('input[name="gender"]');
+        allGenderInputs.forEach(radio => {
+            radio.style.borderColor = '#00ff88';
+        });
     });
 });
 
